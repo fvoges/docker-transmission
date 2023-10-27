@@ -15,7 +15,7 @@ jobs:
         id: date
         run: echo "date=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
       - name: Checkout branch "master"
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.3.0
         with:
           ref: 'master'
       - name: Tag snapshot

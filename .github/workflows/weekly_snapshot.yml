@@ -19,8 +19,13 @@ jobs:
         with:
           ref: 'master'
       - name: Tag snapshot
-        uses: tvdias/github-tagger@v0.0.2
+        # uses: tvdias/github-tagger@v0.0.2
+        # with:
+        #   repo-token: ${{ secrets.GITHUB_TOKEN }}
+        #   tag: ${{ steps.date.outputs.date }}
+        uses: rickstaa/action-create-tag@v1        
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.date.outputs.date }}
+          tag_exists_error: false
+          # message: "Latest release"
     

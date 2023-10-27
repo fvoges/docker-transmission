@@ -27,4 +27,4 @@ jobs:
         id: tag_version
         with:
           custom_tag: ${{ steps.date.outputs.date }}
-    
+          github_token: ${{ secrets.GITHUB_TOKEN }}

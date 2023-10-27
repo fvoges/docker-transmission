@@ -23,9 +23,8 @@ jobs:
         # with:
         #   repo-token: ${{ secrets.GITHUB_TOKEN }}
         #   tag: ${{ steps.date.outputs.date }}
-        uses: rickstaa/action-create-tag@v1        
+        uses: mathieudutour/github-tag-action@v6.1
+        id: tag_version
         with:
-          tag: ${{ steps.date.outputs.date }}
-          tag_exists_error: false
-          # message: "Latest release"
+          custom_tag: ${{ steps.date.outputs.date }}
     

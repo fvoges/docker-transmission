@@ -28,3 +28,15 @@ jobs:
         with:
           custom_tag: ${{ steps.date.outputs.date }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  build-and-publish:
+    name: Build and publish image
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v2
+        - name: Build and Publish Tag Docker image
+          uses: VaultVulp/gp-docker-action@1.1.12
+          with:
+              github-token: ${{ secrets.GITHUB_TOKEN }}
+              image-name: transmision
+              extract-git-tag: true

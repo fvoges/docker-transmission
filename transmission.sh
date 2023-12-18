@@ -66,14 +66,40 @@ done
 shift $(( OPTIND - 1 ))
 
 [[ "${TZ:-""}" ]] && timezone "$TZ"
-[[ "${USERID:-""}" =~ ^[0-9]+$ ]] && usermod -u $USERID debian-transmission
-[[ "${GROUPID:-""}" =~ ^[0-9]+$ ]] && usermod -g $GROUPID debian-transmission
+[[ "${USERID:-""}" =~ ^[0-9]+$ ]] && usermod -u $USERID transmission
+[[ "${GROUPID:-""}" =~ ^[0-9]+$ ]] && usermod -g $GROUPID transmission
 
 [[ -d $dir/downloads ]] || mkdir -p $dir/downloads
 [[ -d $dir/incomplete ]] || mkdir -p $dir/incomplete
 [[ -d $dir/info/blocklists ]] || mkdir -p $dir/info/blocklists
+[[ -r $dir/info/settings.json ]] || cat >$dir/info/settings.json <<-"EOF"
+	{
+	    "blocklist-enabled": 0,
+	    "dht-enabled": true,
+	    "download-dir": "${dir}/downloads",
+	    "incomplete-dir": "${dir}/incomplete",
+	    "incomplete-dir-enabled": true,
+	    "download-limit": 100,
+	    "download-limit-enabled": 0,
+	    "encryption": 1,
+	    "max-peers-global": 200,
+	    "peer-port": 51413,
+	    "peer-socket-tos": "lowcost",
+	    "pex-enabled": 1,
+	    "port-forwarding-enabled": 0,
+	    "queue-stalled-enabled": true,
+	    "ratio-limit-enabled": true,
+	    "rpc-authentication-required": 1,
+	    "rpc-password": "transmission",
+	    "rpc-port": 9091,
+	    "rpc-username": "transmission",
+	    "rpc-whitelist": "127.0.0.1",
+	    "upload-limit": 100,
+	    "upload-limit-enabled": 0
+	}
+	EOF
 
-chown -Rh debian-transmission. $dir 2>&1 | grep -iv 'Read-only' || :
+chown -Rh transmission:transmission $dir 2>&1 | grep -iv 'Read-only' || :
 
 if [[ $# -ge 1 && -x $(which $1 2>&-) ]]; then
     exec "$@"
@@ -86,15 +112,23 @@ else
     url='http://list.iblocklist.com'
     curl -Ls "$url"'/?list=ydxerpxkpcfqjaybcssw&fileformat=p2p&archiveformat=gz' |
                 gzip -cd > $dir/info/blocklists/bt_level1
-    chown debian-transmission. $dir/info/blocklists/bt_level1
+    chown transmission. $dir/info/blocklists/bt_level1
     grep -q peer-socket-tos $dir/info/settings.json ||
         sed -i '/"peer-port"/a \
     "peer-socket-tos": "lowcost",' $dir/info/settings.json
     sed -i '/"queue-stalled-enabled"/s/:.*/: true,/' $dir/info/settings.json
-    exec su -l debian-transmission -s /bin/bash -c "exec transmission-daemon \
-                --config-dir $dir/info --blocklist --encryption-required \
-                --log-error -e /proc/self/fd/1 --global-seedratio 3.0 --no-dht \
-                --incomplete-dir $dir/incomplete --auth --foreground \
-                --username '${TRUSER:-admin}' --password '${TRPASSWD:-admin}' \
-                --download-dir $dir/downloads --allowed \\* 2>&1"
+    exec su -l transmission -s /bin/bash -c "exec transmission-daemon \
+                --config-dir $dir/info \
+                --blocklist \
+                --encryption-required \
+                --log-level=error \
+                --logfile $dir/logs/transmission.log \
+                --global-seedratio 3.0 \
+                --no-dht \
+                --incomplete-dir $dir/incomplete \
+                --auth --foreground \
+                --username '${TRUSER:-admin}' \
+                --password '${TRPASSWD:-admin}' \
+                --download-dir $dir/downloads \
+                --allowed \\*"
 fi

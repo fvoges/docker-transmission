@@ -4,13 +4,12 @@ on:
   push:
 
 jobs:
-  build-and-publish-tag:
+  build-and-publish:
     runs-on: ubuntu-latest
     if: github.ref != 'refs/heads/maain'
-
-
     steps:
-        - uses: actions/checkout@v3
+        - name: Checkout
+          uses: actions/checkout@v3
 
         - name: Build and Publish Tag Docker image
           uses: VaultVulp/gp-docker-action@1.6.0

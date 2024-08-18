@@ -1,21 +1,19 @@
-name: Build and Push image
+name: Build and Push snapshot image
 on:
   workflow_dispatch:
   push:
-    tags:
-      - '*'
 
 jobs:
-  build-and-publish-tag:
+  build-and-publish:
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') # Running this job only for tags
-
+    if: github.ref != 'refs/heads/maain'
     steps:
-        - uses: actions/checkout@v4
+        - name: Checkout
+          uses: actions/checkout@v4
 
         - name: Build and Publish Tag Docker image
           uses: VaultVulp/gp-docker-action@1.7.0
           with:
               github-token: ${{ secrets.GITHUB_TOKEN }}
               image-name: transmission
-              extract-git-tag: true
+              image-tag: snapshot

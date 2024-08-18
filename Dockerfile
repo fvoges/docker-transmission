@@ -1,25 +1,26 @@
-FROM debian:buster
-MAINTAINER David Personette <dperson@dperson.com>
+FROM alpine
+LABEL org.opencontainers.image.authors="fvoges@gmail.com"
+LABEL org.opencontainers.image.title="Transmission"
+LABEL org.opencontainers.image.url="https://github.com/fvoges/docker-transmission"
+LABEL org.opencontainers.image.description="Transmission is a BitTorrent client which features a variety of user interfaces on top of a cross-platform back-end. Transmission is free software licensed under the terms of the GNU General Public License, with parts under the MIT License."
 
 # Install transmission
-RUN export DEBIAN_FRONTEND='noninteractive' && \
-    apt-get update -qq && \
-    apt-get install -qqy --no-install-recommends transmission-daemon curl bind9utils bind9-host \
-                $(apt-get -s dist-upgrade|awk '/^Inst.*ecurity/ {print $2}') &&\
-    apt-get clean && \
-    usermod -d /var/lib/transmission-daemon debian-transmission && \
-    [ -d /var/lib/transmission-daemon/downloads ] || \
-                mkdir -p /var/lib/transmission-daemon/downloads && \
-    [ -d /var/lib/transmission-daemon/incomplete ] || \
-                mkdir -p /var/lib/transmission-daemon/incomplete && \
-    [ -d /var/lib/transmission-daemon/info/blocklists ] || \
-                mkdir -p /var/lib/transmission-daemon/info/blocklists && \
-    chown -Rh debian-transmission. /var/lib/transmission-daemon && \
-    rm -rf /var/lib/apt/lists/* /tmp/*
+RUN <<EOF
+apk upgrade --no-cache --no-progress
+apk add --no-cache --no-progress bash curl shadow sed tini transmission-daemon tzdata
+TRANSMISSION_HOME="/var/lib/transmission-daemon"
+mkdir -p $TRANSMISSION_HOME
+usermod -d $TRANSMISSION_HOME transmission
+chown -Rh transmission:transmission $TRANSMISSION_HOME
+rm -rf /tmp/*
+EOF
 COPY transmission.sh /usr/bin/
 
-VOLUME ["/run", "/tmp", "/var/cache", "/var/lib", "/var/log", "/var/tmp"]
+VOLUME ["/data", "/conf"]
 
-EXPOSE 9091 51413/tcp 51413/udp
+EXPOSE 9091/tcp 51413/tcp 51413/udp
 
-ENTRYPOINT ["transmission.sh"]
+ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/transmission.sh"]
+
+HEALTHCHECK --interval=60s --timeout=15s \
+    CMD netstat -lntp | grep -qF '0.0.0.0:9091'

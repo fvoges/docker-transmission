@@ -9,7 +9,7 @@ jobs:
     if: github.ref != 'refs/heads/maain'
     steps:
         - name: Checkout
-          uses: actions/checkout@v3
+          uses: actions/checkout@v4
 
         - name: Build and Publish Tag Docker image
           uses: VaultVulp/gp-docker-action@1.7.0

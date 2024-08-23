@@ -53,7 +53,8 @@ BLOCKLIST_URL="${TRANSMISSION_BLOCKLIST_URL:-"https://list.iblocklist.com/?list=
 
 chown -Rh transmission:transmission $TRANSMISSION_HOME 2>&1 | grep -iv 'Read-only' || :
 chown -Rh transmission:transmission $TRANSMISSION_CONF 2>&1 | grep -iv 'Read-only' || :
-chown -Rh transmission:transmission $TRANSMISSION_DATA 2>&1 | grep -iv 'Read-only' || :
+chown transmission:transmission $TRANSMISSION_DATA 2>&1 | grep -iv 'Read-only' || :
+chown transmission:transmission $TRANSMISSION_DATA/* 2>&1 | grep -iv 'Read-only' || :
 
 curl -Ls "$BLOCKLIST_URL" | gzip -cd > $TRANSMISSION_CONF/blocklists/bt_level1
 chown transmission $TRANSMISSION_CONF/blocklists/bt_level1
